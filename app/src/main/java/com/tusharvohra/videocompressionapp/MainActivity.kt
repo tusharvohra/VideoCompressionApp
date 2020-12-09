@@ -28,7 +28,10 @@ open class MainActivity : AppCompatActivity() {
 
     private var path: String? = null
 
+    private lateinit var uri2: Uri
 
+
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -39,18 +42,22 @@ open class MainActivity : AppCompatActivity() {
         loadFFMpegBinary()
     }
 
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
     private fun initView() {
         btn_select_video.setOnClickListener {
-//         val i = Intent(Intent.ACTION_PICK, MediaStore.Video.Media.EXTERNAL_CONTENT_URI)
-//         startActivityForResult(i, 0)
-
             val intent = Intent()
             intent.type = "video/*"
             intent.action = Intent.ACTION_GET_CONTENT
             startActivityForResult(Intent.createChooser(intent, "Select Video"), 0)
-
-
             vv_video.visibility = View.VISIBLE
+        }
+
+        btn_compress.setOnClickListener{
+            path = generatePath(uri2, this.applicationContext)
+            Log.i("APPDATA", path!!)
+            val cmd = "-i /storage/self/primary/Movies/Instagram/VID_80890326_234112_584.mp4 -b 80k /storage/self/primary/CompressedVideos/output.mp4"
+            val command: Array<String> = cmd.split(" ").toTypedArray()
+            execFFmpegBinary(command)
         }
 
     }
@@ -60,16 +67,15 @@ open class MainActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == RESULT_OK) {
             val uri: Uri? = data?.data
+            uri2 = uri!!
             try {
                 vv_video.setVideoURI(uri)
                 vv_video.start()
+                vv_video.canPause()
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
-
-        path = data?.data?.let { generatePath(it, this) }
-        Log.i("APPDATA", path!!)
     }
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
@@ -124,10 +130,12 @@ open class MainActivity : AppCompatActivity() {
         try {
             ffmpeg.execute(command, object : ExecuteBinaryResponseHandler() {
                 override fun onFailure(s: String) {
+                    Log.d("APPDATA", "Failure : $s")
 //                    addTextViewToLayout("FAILED with output : $s")
                 }
 
                 override fun onSuccess(s: String) {
+                    Log.d("APPDATA", "Success : $s")
 //                    addTextViewToLayout("SUCCESS with output : $s")
                 }
 
