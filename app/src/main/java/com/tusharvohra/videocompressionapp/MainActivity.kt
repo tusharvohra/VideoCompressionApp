@@ -53,9 +53,15 @@ open class MainActivity : AppCompatActivity() {
         }
 
         btn_compress.setOnClickListener{
-            path = generatePath(uri2, this.applicationContext)
-            Log.i("APPDATA", path!!)
-            val cmd = "-i /storage/self/primary/Movies/Instagram/VID_80890326_234112_584.mp4 -b 80k /storage/self/primary/CompressedVideos/output.mp4"
+            btn_select_video.visibility = View.GONE
+            tv_hint_for_bitrate.visibility = View.GONE
+            et_bitrate.visibility = View.GONE
+            et_path.visibility = View.GONE
+            vv_video.visibility = View.GONE
+            tv_progress.visibility = View.VISIBLE
+            tv_result.visibility = View.VISIBLE
+            vv_result.visibility = View.VISIBLE
+            val cmd = "-i ${et_path.text} -b ${et_bitrate.text}k /storage/self/primary/CompressedVideos/output.mp4"
             val command: Array<String> = cmd.split(" ").toTypedArray()
             execFFmpegBinary(command)
         }
@@ -143,6 +149,7 @@ open class MainActivity : AppCompatActivity() {
                     Log.d("APPDATA", "Started command : ffmpeg $command")
 //                    addTextViewToLayout("progress : $s")
 //                    progressDialog.setMessage("Processing\n$s")
+                    tv_progress.text = s
                 }
 
                 override fun onStart() {
